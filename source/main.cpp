@@ -67,6 +67,7 @@ DECL_FUNCTION(int, AcquireIndependentServiceToken__Q2_2nn3actFPcPCc, uint8_t* to
     // If this is the Uplay client, return success
     if (client_id && strcmp(client_id, UPLAY_CLIENT_ID) == 0) {
         WHBLogPrintf("GiveMiiUplay: Faking service success for '%s'", client_id);
+        memcpy(token, "IAmTotallyARealTokenManTrustMe", sizeof("IAmTotallyARealTokenManTrustMe"));
         return 0;
     }
 
