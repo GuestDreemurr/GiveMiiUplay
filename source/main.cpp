@@ -10,21 +10,20 @@
 #include <patcher/rplinfo.h>
 #include <patcher/patcher.h>
 
-WUPS_PLUGIN_NAME("GiveMiiYouTube");
-WUPS_PLUGIN_DESCRIPTION("Allows the YouTube app to continue functioning after its discontinuation");
-WUPS_PLUGIN_VERSION("v2.0");
-WUPS_PLUGIN_AUTHOR("GaryOderNichts");
+WUPS_PLUGIN_NAME("GiveMiiUplay");
+WUPS_PLUGIN_DESCRIPTION("Allows the Uplay app to get past the service token check.");
+WUPS_PLUGIN_VERSION("v1.0");
+WUPS_PLUGIN_AUTHOR("GuestDreemurr");
 WUPS_PLUGIN_LICENSE("MIT");
 
-#define YOUTUBE_CLIENT_ID "e921a604fce89365498613fdf001b492"
-#define YOUTUBE_TITLE_ID 0x0005000010105700llu
-#define YOUTUBE_USERAGENT_PLATFORM "WiiU; "
-#define YOUTUBE_USERAGENT_PLATFORM_REPLACEMENT "NoU; "
+#define UPLAY_TITLE_ID 0x000500001011BA00llu // 00050000-1011BA00
+#define UPLAY_CLIENT_ID "eb158139563c54df15d3ad895dd80355"
+
 
 ON_APPLICATION_START()
 {
-    // If this is not the YouTube app no need to do anything
-    if (OSGetTitleID() != YOUTUBE_TITLE_ID) {
+    // If this is not uplay do nothing
+    if (OSGetTitleID() != UPLAY_TITLE_ID) {
         return;
     }
 
@@ -34,48 +33,44 @@ ON_APPLICATION_START()
         WHBLogUdpInit();
     }
 
-    WHBLogPrintf("GiveMiiYouTube: applying patches...");
+    WHBLogPrintf("GiveMiiUplay: applying patches...");
 
     // Patch the dynload functions so GetRPLInfo works
     if (!PatchDynLoadFunctions()) {
-        WHBLogPrintf("GiveMiiYouTube: Failed to patch dynload functions");
+        WHBLogPrintf("GiveMiiUplay: Failed to patch dynload functions");
         return;
     }
 
     // Get the RPLInfo
     auto rpl_info = TryGetRPLInfo();
     if (!rpl_info) {
-        WHBLogPrintf("GiveMiiYouTube: Failed to get RPL info");
+        WHBLogPrintf("GiveMiiUplay: Failed to get RPL info");
         return;
     }
 
     // Find the rpx
     rplinfo rpls = *rpl_info;
-    auto lb_shell_rpx = FindRPL(rpls, "lb_shell.rpx");
+    auto lb_shell_rpx = FindRPL(rpls, "UplayBrowser.rpx");
     if (!lb_shell_rpx) {
-        WHBLogPrintf("GiveMiiYouTube: Failed to find lb_shell.rpx");
+        WHBLogPrintf("GiveMiiUplay: Failed to find UplayBrowser.rpx");
         return;
+
     }
 
-    // Patch the useragent platform
-    OSDynLoad_NotifyData rpx_data = *lb_shell_rpx;
-    if (!replace_string(rpx_data.dataAddr, rpx_data.dataSize, 
-        YOUTUBE_USERAGENT_PLATFORM, sizeof(YOUTUBE_USERAGENT_PLATFORM),
-        YOUTUBE_USERAGENT_PLATFORM_REPLACEMENT, sizeof(YOUTUBE_USERAGENT_PLATFORM_REPLACEMENT))) {
-        WHBLogPrintf("GiveMiiYouTube: Failed to replace useragent platform");
-        return;
-    }
+    
+
+    // TODO: patch onlineconfigservice.ubi.com, aswell as find a way to patch the urls in the actionscript (maybe hook nlibcurl and modify the request domain at runtime? probably not best practice though..)
 }
 
 DECL_FUNCTION(int, AcquireIndependentServiceToken__Q2_2nn3actFPcPCc, uint8_t* token, const char* client_id)
 {
-    // If this is the YouTube client, return sucess
-    if (client_id && strcmp(client_id, YOUTUBE_CLIENT_ID) == 0) {
-        WHBLogPrintf("GiveMiiYouTube: Faking service sucess for '%s'", client_id);
+    // If this is the Uplay client, return success
+    if (client_id && strcmp(client_id, UPLAY_CLIENT_ID) == 0) {
+        WHBLogPrintf("GiveMiiUplay: Faking service success for '%s'", client_id);
         return 0;
     }
 
     return real_AcquireIndependentServiceToken__Q2_2nn3actFPcPCc(token, client_id);
 }
 
-WUPS_MUST_REPLACE(AcquireIndependentServiceToken__Q2_2nn3actFPcPCc, WUPS_LOADER_LIBRARY_NN_ACT, AcquireIndependentServiceToken__Q2_2nn3actFPcPCc);
+

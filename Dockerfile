@@ -1,6 +1,6 @@
-FROM wiiuenv/devkitppc:20220806
+FROM ghcr.io/wiiu-env/devkitppc:20260225
 
-COPY --from=wiiuenv/libkernel:20220724 /artifacts $DEVKITPRO
-COPY --from=wiiuenv/wiiupluginsystem:20220826 /artifacts $DEVKITPRO
+COPY --from=ghcr.io/wiiu-env/libkernel:20260331 /artifacts $DEVKITPRO
+COPY --from=ghcr.io/wiiu-env/wiiupluginsystem:20260225 /artifacts $DEVKITPRO
 
 WORKDIR /project
