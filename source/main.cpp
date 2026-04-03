@@ -72,5 +72,6 @@ DECL_FUNCTION(int, AcquireIndependentServiceToken__Q2_2nn3actFPcPCc, uint8_t* to
 
     return real_AcquireIndependentServiceToken__Q2_2nn3actFPcPCc(token, client_id);
 }
+WUPS_MUST_REPLACE(AcquireIndependentServiceToken__Q2_2nn3actFPcPCc, WUPS_LOADER_LIBRARY_NN_ACT, AcquireIndependentServiceToken__Q2_2nn3actFPcPCc);
 
 
